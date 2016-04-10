@@ -109,14 +109,6 @@ def prettyprint(string):
                    separators=(',', ': ')))
 
 
-def pass_list_to_skin(name="", data=[], prefix="", handle=None):
-    if not handle:
-        return None
-    for item in data:
-        add_image(item["label"], item["thumb"], item["thumb"])
-    xbmcplugin.endOfDirectory(handle)
-
-
 def add_image(item, total=0):
     liz = xbmcgui.ListItem(str(item["index"]),
                            iconImage="DefaultImage.png",

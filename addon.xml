@@ -8,7 +8,6 @@
 	<extension point="xbmc.python.pluginsource" library="plugin.py">
 		<provides>image</provides>
 	</extension>
-	<extension point="xbmc.python.library" library="default.py" />
 	<extension point="xbmc.addon.metadata">
 		<language/>
 		<summary lang="en">Cyanide &amp; Happiness webcomic</summary>
