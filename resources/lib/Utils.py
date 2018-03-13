@@ -4,24 +4,16 @@
 # This program is Free Software see LICENSE file for details
 
 import xbmc
-import xbmcaddon
 import xbmcgui
 import xbmcvfs
 import xbmcplugin
-import urllib2
+import requests
 import os
 import sys
 import time
 import simplejson as json
 
-ADDON = xbmcaddon.Addon()
-ADDON_ID = ADDON.getAddonInfo('id')
-ADDON_ICON = ADDON.getAddonInfo('icon')
-ADDON_NAME = ADDON.getAddonInfo('name')
-ADDON_PATH = ADDON.getAddonInfo('path').decode("utf-8")
-ADDON_VERSION = ADDON.getAddonInfo('version')
-ADDON_DATA_PATH = xbmc.translatePath("special://profile/addon_data/%s" % ADDON_ID).decode("utf-8")
-SETTING = ADDON.getSetting
+from kodi65 import addon
 
 
 def get_http(url=None, headers=False):
@@ -31,16 +23,13 @@ def get_http(url=None, headers=False):
     succeed = 0
     if not headers:
         headers = {'User-agent': 'XBMC/16.0 ( phil65@kodi.tv )'}
-    request = urllib2.Request(url)
-    log(url)
-    for (key, value) in headers.iteritems():
-        request.add_header(key, value)
     while (succeed < 2) and (not xbmc.abortRequested):
         try:
-            response = urllib2.urlopen(request, timeout=3)
-            log(response)
-            return response.read()
-        except:
+            r = requests.get(url, headers=headers)
+            if r.status_code != 200:
+                raise Exception
+            return r.text
+        except Exception:
             log("get_http: could not get data from %s" % url)
             xbmc.sleep(1000)
             succeed += 1
@@ -50,7 +39,7 @@ def get_http(url=None, headers=False):
 def log(txt):
     if isinstance(txt, str):
         txt = txt.decode("utf-8", 'ignore')
-    message = u'%s: %s' % (ADDON_ID, txt)
+    message = u'%s: %s' % (addon.ID, txt)
     xbmc.log(msg=message.encode("utf-8", 'ignore'),
              level=xbmc.LOGDEBUG)
 
@@ -72,7 +61,6 @@ def save_to_file(content, filename, path=""):
     log("saved textfile %s. Time: %f" % (text_file_path, time.time() - now))
     return True
 
-
 def read_from_file(path="", raw=False):
     """
     return data from file with *path
@@ -92,22 +80,6 @@ def read_from_file(path="", raw=False):
     except:
         log("failed to load textfile: " + path)
         return False
-
-
-def notify(header="", message="", icon=ADDON_ICON, time=5000, sound=True):
-    xbmcgui.Dialog().notification(heading=header,
-                                  message=message,
-                                  icon=icon,
-                                  time=time,
-                                  sound=sound)
-
-
-def prettyprint(string):
-    log(json.dumps(string,
-                   sort_keys=True,
-                   indent=4,
-                   separators=(',', ': ')))
-
 
 def add_image(item, total=0):
     liz = xbmcgui.ListItem(str(item["index"]),
